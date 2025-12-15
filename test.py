@@ -67,6 +67,12 @@ def load_data(_seed_status):
 df = load_data(seed_status)
 
 # ------------------------------------------------------
+# DATA CLEANING (IMPORTANT)
+# ------------------------------------------------------
+df["salary"] = pd.to_numeric(df["salary"], errors="coerce")
+df = df.dropna(subset=["salary"])
+
+# ------------------------------------------------------
 # SIDEBAR - ADVANCED CONTROL PANEL
 # ------------------------------------------------------
 st.sidebar.title("🧭 Control Panel")
@@ -96,7 +102,13 @@ year_list = ["All"] + sorted(df["year"].dropna().unique().tolist())
 year_filter = st.sidebar.selectbox("Year", year_list)
 
 # Salary Slider
-min_sal, max_sal = int(df["salary"].min()), int(df["salary"].max())
+if df["salary"].empty:
+    st.error("Salary data is unavailable")
+    st.stop()
+
+min_sal = int(df["salary"].min())
+max_sal = int(df["salary"].max())
+
 salary_filter = st.sidebar.slider(
     "Salary Range",
     min_sal,
