@@ -67,10 +67,24 @@ def load_data(_seed_status):
 df = load_data(seed_status)
 
 # ------------------------------------------------------
-# DATA CLEANING (IMPORTANT)
+# SALARY NORMALIZATION (ROBUST)
 # ------------------------------------------------------
 
-df["salary_lakhs"] = pd.to_numeric(df["salary_in_lakhs"], errors="coerce")
+# Try salary_in_lakhs first
+df["salary_lakhs"] = (
+    df["salary_in_lakhs"]
+    .astype(str)
+    .str.replace(",", "", regex=False)
+)
+
+df["salary_lakhs"] = pd.to_numeric(df["salary_lakhs"], errors="coerce")
+
+# Fallback: derive from USD if lakhs missing
+df.loc[df["salary_lakhs"].isna(), "salary_lakhs"] = (
+    pd.to_numeric(df["salary_in_usd"], errors="coerce") / 120000
+)
+
+# Final clean
 df = df.dropna(subset=["salary_lakhs"])
 
 # ------------------------------------------------------
@@ -160,7 +174,7 @@ filtered_df = filtered_df[
 filtered_df = filtered_df[filtered_df["role"].isin(role_filter)]
 
 if high_salary_only:
-    filtered_df = filtered_df[filtered_df["salary"] > 2_000_000]
+    filtered_df = filtered_df[filtered_df["salary_lakhs"] > 20]
 
 if high_bonus_only:
     filtered_df = filtered_df[filtered_df["bonus"] > filtered_df["bonus"].median()]
@@ -230,7 +244,7 @@ avg_salary_domain = (
     .sort_values("salary", ascending=False)
 )
 st.plotly_chart(
-    px.bar(avg_salary_domain, x="domain", y="salary", text_auto=True),
+    px.bar(avg_salary_domain, x="domain", y="salary_lakhs", text_auto=True),
     use_container_width=True
 )
 
@@ -242,7 +256,7 @@ avg_level_salary = (
     .sort_values("salary", ascending=False)
 )
 st.plotly_chart(
-    px.bar(avg_level_salary, x="level", y="salary", text_auto=True),
+    px.bar(avg_level_salary, x="level", y="salary_lakhs", text_auto=True),
     use_container_width=True
 )
 
