@@ -70,7 +70,7 @@ df = load_data(seed_status)
 # DATA CLEANING (IMPORTANT)
 # ------------------------------------------------------
 df["salary"] = pd.to_numeric(df["salary"], errors="coerce")
-df = df.dropna(subset=["salary"])
+#df = df.dropna(subset=["salary"])
 
 # ------------------------------------------------------
 # SIDEBAR - ADVANCED CONTROL PANEL
