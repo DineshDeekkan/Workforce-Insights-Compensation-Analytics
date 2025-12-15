@@ -13,6 +13,7 @@ st.title("📊 Workforce Insights & Compensation Analytics")
 # ------------------------------------------------------
 # DATABASE CONNECTION (NEON - SAFE)
 # ------------------------------------------------------
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 @st.cache_resource
@@ -24,11 +25,34 @@ def get_engine():
 
 engine = get_engine()
 
-@st.cache_data
-def load_data():
-    return pd.read_sql("SELECT * FROM updated_employees", engine)
+# ------------------------------------------------------
+# ONE-TIME DATABASE SEED (RUNS ONLY IF TABLE EMPTY)
+# ------------------------------------------------------
+@st.cache_resource
+def seed_database():
+    try:
+        # Check if data already exists
+        pd.read_sql("SELECT 1 FROM public.updated_employees LIMIT 1", engine)
+        return "Data already exists"
+    except:
+        csv_url = (
+            "https://raw.githubusercontent.com/"
+            "DineshDeekkan/Workforce-Insights-Compensation-Analytics/"
+            "main/updated_employees.csv"
+        )
+        df_seed = pd.read_csv(csv_url)
 
-df = load_data()
+        df_seed.to_sql(
+            "updated_employees",
+            engine,
+            index=False,
+            if_exists="replace",
+            schema="public"
+        )
+        return "Data loaded"
+
+seed_status = seed_database()
+st.caption(f"🗄 DB status: {seed_status}")
 
 # ------------------------------------------------------
 # SIDEBAR - ADVANCED CONTROL PANEL
