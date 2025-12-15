@@ -187,7 +187,7 @@ if top_roles_only:
 # SMART INSIGHTS
 # ------------------------------------------------------
 try:
-    highest_domain = filtered_df.groupby("domain")["salary"].mean().idxmax()
+    highest_domain = filtered_df.groupby("domain")["salary_lakhs"].mean().idxmax()
     st.sidebar.markdown(
         f"🏆 <b>Top Paying Domain:</b> {highest_domain}",
         unsafe_allow_html=True
@@ -233,12 +233,12 @@ with col1:
     st.plotly_chart(fig_domain, use_container_width=True)
 
 with col2:
-    fig_salary = px.histogram(filtered_df, x="salary", nbins=20, title="Salary Distribution (INR)")
+    fig_salary = px.histogram(filtered_df, x="salary_lakhs", nbins=20, title="Salary Distribution (Lakhs)")
     st.plotly_chart(fig_salary, use_container_width=True)
 
 st.subheader("📊 Average Salary by Domain")
 avg_salary_domain = (
-    filtered_df.groupby("domain")["salary"]
+    filtered_df.groupby("domain")["salary_lakhs"]
     .mean()
     .reset_index()
     .sort_values("salary", ascending=False)
@@ -250,10 +250,10 @@ st.plotly_chart(
 
 st.subheader("🏆 Level-wise Salary Comparison")
 avg_level_salary = (
-    filtered_df.groupby("level")["salary"]
+    filtered_df.groupby("level")["salary_lakhs"]
     .mean()
     .reset_index()
-    .sort_values("salary", ascending=False)
+    .sort_values("salary_lakhs", ascending=False)
 )
 st.plotly_chart(
     px.bar(avg_level_salary, x="level", y="salary_lakhs", text_auto=True),
