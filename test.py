@@ -69,8 +69,9 @@ df = load_data(seed_status)
 # ------------------------------------------------------
 # DATA CLEANING (IMPORTANT)
 # ------------------------------------------------------
-df["salary"] = pd.to_numeric(df["salary"], errors="coerce")
-#df = df.dropna(subset=["salary"])
+
+df["salary_lakhs"] = pd.to_numeric(df["salary_in_lakhs"], errors="coerce")
+df = df.dropna(subset=["salary_lakhs"])
 
 # ------------------------------------------------------
 # SIDEBAR - ADVANCED CONTROL PANEL
@@ -102,12 +103,12 @@ year_list = ["All"] + sorted(df["year"].dropna().unique().tolist())
 year_filter = st.sidebar.selectbox("Year", year_list)
 
 # Salary Slider
-if df["salary"].empty:
+if df["salary_lakhs"].empty:
     st.error("Salary data is unavailable")
     st.stop()
 
-min_sal = int(df["salary"].min())
-max_sal = int(df["salary"].max())
+min_sal = int(df["salary_lakhs"].min())
+max_sal = int(df["salary_lakhs"].max())
 
 salary_filter = st.sidebar.slider(
     "Salary Range",
@@ -152,8 +153,8 @@ if year_filter != "All":
     filtered_df = filtered_df[filtered_df["year"] == year_filter]
 
 filtered_df = filtered_df[
-    (filtered_df["salary"] >= salary_filter[0]) &
-    (filtered_df["salary"] <= salary_filter[1])
+    (filtered_df["salary_lakhs"] >= salary_filter[0]) &
+    (filtered_df["salary_lakhs"] <= salary_filter[1])
 ]
 
 filtered_df = filtered_df[filtered_df["role"].isin(role_filter)]
@@ -200,9 +201,9 @@ def to_millions(val):
 k1, k2, k3, k4, k5, k6 = st.columns(6)
 
 k1.metric("👥 Employees", len(filtered_df))
-k2.metric("💰 Avg Salary (M)", f"{to_millions(filtered_df['salary'].mean())} M")
-k3.metric("⬆ Max Salary (M)", f"{to_millions(filtered_df['salary'].max())} M")
-k4.metric("⬇ Min Salary (M)", f"{to_millions(filtered_df['salary'].min())} M")
+k2.metric("💰 Avg Salary (Lakhs)", round(filtered_df["salary_lakhs"].mean(), 2))
+k3.metric("⬆ Max Salary (Lakhs)", round(filtered_df["salary_lakhs"].max(), 2))
+k4.metric("⬇ Min Salary (Lakhs)", round(filtered_df["salary_lakhs"].min(), 2))
 k5.metric("🧬 Domains", filtered_df["domain"].nunique())
 k6.metric("🛠 Roles", filtered_df["role"].nunique())
 
