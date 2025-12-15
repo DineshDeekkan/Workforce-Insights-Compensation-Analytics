@@ -65,27 +65,19 @@ def load_data(_seed_status):
     )
 
 df = load_data(seed_status)
+st.write("🧪 Columns in dataset:", df.columns.tolist())
 
 # ------------------------------------------------------
-# SALARY NORMALIZATION (ROBUST)
+# SALARY NORMALIZATION (FINAL & GUARANTEED)
 # ------------------------------------------------------
 
-# Try salary_in_lakhs first
-df["salary_lakhs"] = (
-    df["salary_in_lakhs"]
-    .astype(str)
-    .str.replace(",", "", regex=False)
-)
+# Always derive from USD (most reliable)
+df["salary_lakhs"] = pd.to_numeric(
+    df["salary_in_usd"], errors="coerce"
+) / 120000
 
-df["salary_lakhs"] = pd.to_numeric(df["salary_lakhs"], errors="coerce")
-
-# Fallback: derive from USD if lakhs missing
-df.loc[df["salary_lakhs"].isna(), "salary_lakhs"] = (
-    pd.to_numeric(df["salary_in_usd"], errors="coerce") / 120000
-)
-
-# Final clean
-df = df.dropna(subset=["salary_lakhs"])
+# Remove invalid salaries
+df = df[df["salary_lakhs"] > 0]
 
 # ------------------------------------------------------
 # SIDEBAR - ADVANCED CONTROL PANEL
@@ -115,11 +107,6 @@ mode_filter = st.sidebar.selectbox("Work Mode", mode_list)
 # Year Filter
 year_list = ["All"] + sorted(df["year"].dropna().unique().tolist())
 year_filter = st.sidebar.selectbox("Year", year_list)
-
-# Salary Slider
-if df["salary_lakhs"].empty:
-    st.error("Salary data is unavailable")
-    st.stop()
 
 min_sal = int(df["salary_lakhs"].min())
 max_sal = int(df["salary_lakhs"].max())
