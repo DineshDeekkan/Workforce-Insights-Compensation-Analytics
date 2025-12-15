@@ -58,22 +58,13 @@ st.caption(f"🗄 DB status: {seed_status}")
 # LOAD DATA SAFELY
 # ------------------------------------------------------
 @st.cache_data
-def load_data():
-    try:
-        return pd.read_sql(
-            "SELECT * FROM public.updated_employees",
-            engine
-        )
-    except Exception as e:
-        st.error("❌ Failed to load data from database")
-        st.exception(e)
-        return pd.DataFrame()
+def load_data(_seed_status):
+    return pd.read_sql(
+        "SELECT * FROM public.updated_employees",
+        engine
+    )
 
-df = load_data()
-
-if df.empty:
-    st.warning("⚠️ No data available. Please wait or redeploy.")
-    st.stop()
+df = load_data(seed_status)
 
 # ------------------------------------------------------
 # SIDEBAR - ADVANCED CONTROL PANEL
