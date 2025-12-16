@@ -235,7 +235,7 @@ avg_salary_domain = (
     filtered_df.groupby("domain")["salary_lakhs"]
     .mean()
     .reset_index()
-    .sort_values("salary", ascending=False)
+    .sort_values("salary_lakhs", ascending=False)
 )
 st.plotly_chart(
     px.bar(avg_salary_domain, x="domain", y="salary_lakhs", text_auto=True),
