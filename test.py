@@ -66,29 +66,31 @@ def load_data(_seed_status):
 
 df = load_data(seed_status)
 
-st.write("Sample salary_in_lakhs values:")
-st.write(df["salary_in_lakhs"].head(20))
-
 # ------------------------------------------------------
-# SALARY NORMALIZATION (BULLETPROOF)
+# SALARY NORMALIZATION (FINAL SOURCE = salary_in_usd)
 # ------------------------------------------------------
 
-df["salary_lakhs"] = (
-    df["salary_in_lakhs"]
+st.write("Sample salary_in_usd values:")
+st.write(df["salary_in_usd"].head(20))
+
+df["salary_usd_clean"] = (
+    df["salary_in_usd"]
     .astype(str)
-    .str.lower()
     .str.replace(",", "", regex=False)
-    .str.replace("lpa", "", regex=False)
-    .str.replace("lakhs", "", regex=False)
-    .str.replace("lakh", "", regex=False)
-    .str.replace("₹", "", regex=False)
     .str.extract(r"(\d+\.?\d*)")[0]
 )
 
-df["salary_lakhs"] = pd.to_numeric(df["salary_lakhs"], errors="coerce")
+df["salary_usd_clean"] = pd.to_numeric(
+    df["salary_usd_clean"], errors="coerce"
+)
 
-# ⚠️ DO NOT FILTER YET
-st.write("Salary Lakhs Stats AFTER CLEANING:")
+# Convert USD → Lakhs (₹ ≈ 83, 1 lakh ≈ 1200 USD)
+df["salary_lakhs"] = df["salary_usd_clean"] / 1200
+
+# Keep valid salaries only
+df = df[df["salary_lakhs"] > 0]
+
+st.write("Salary Lakhs Stats AFTER CONVERSION:")
 st.write(df["salary_lakhs"].describe())
 
 # ------------------------------------------------------
@@ -142,7 +144,7 @@ else:
 # ----------------------------
 st.sidebar.markdown("### 🔘 Toggles")
 
-high_salary_only = st.sidebar.checkbox("Show Only High Salary (₹ > 2M)")
+high_salary_only = st.sidebar.checkbox("Show Only High Salary (> 20 Lakhs)")
 high_bonus_only = st.sidebar.checkbox("Show Only High Bonus")
 top_roles_only = st.sidebar.checkbox("Top 5 Roles Only")
 
