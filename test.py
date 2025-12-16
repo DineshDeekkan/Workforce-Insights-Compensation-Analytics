@@ -65,21 +65,30 @@ def load_data(_seed_status):
     )
 
 df = load_data(seed_status)
-st.write("🧪 Columns in dataset:", df.columns.tolist())
 
 # ------------------------------------------------------
-# SALARY NORMALIZATION (FINAL & GUARANTEED)
+# SALARY NORMALIZATION (TEXT-SAFE & FINAL)
 # ------------------------------------------------------
 
-# Always derive from USD (most reliable)
-df["salary_lakhs"] = pd.to_numeric(
-    df["salary_in_usd"], errors="coerce"
-) / 1200
+# Convert salary_in_usd to clean numeric
+df["salary_usd_clean"] = (
+    df["salary_in_usd"]
+    .astype(str)
+    .str.replace(",", "", regex=False)
+    .str.extract(r"(\d+\.?\d*)")[0]
+)
+
+df["salary_usd_clean"] = pd.to_numeric(
+    df["salary_usd_clean"], errors="coerce"
+)
+
+# Convert USD → Lakhs (1 lakh ≈ 1200 USD)
+df["salary_lakhs"] = df["salary_usd_clean"] / 1200
+
+# Keep valid salaries only
+df = df[df["salary_lakhs"].notna() & (df["salary_lakhs"] > 0)]
 
 st.write("Salary Lakhs Stats:", df["salary_lakhs"].describe())
-
-# Remove invalid salaries
-df = df[df["salary_lakhs"] > 0]
 
 # ------------------------------------------------------
 # SIDEBAR - ADVANCED CONTROL PANEL
