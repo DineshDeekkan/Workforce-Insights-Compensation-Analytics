@@ -74,7 +74,9 @@ st.write("🧪 Columns in dataset:", df.columns.tolist())
 # Always derive from USD (most reliable)
 df["salary_lakhs"] = pd.to_numeric(
     df["salary_in_usd"], errors="coerce"
-) / 120000
+) / 1200
+
+st.write("Salary Lakhs Stats:", df["salary_lakhs"].describe())
 
 # Remove invalid salaries
 df = df[df["salary_lakhs"] > 0]
