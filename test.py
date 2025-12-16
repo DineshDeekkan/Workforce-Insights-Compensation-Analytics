@@ -108,15 +108,22 @@ mode_filter = st.sidebar.selectbox("Work Mode", mode_list)
 year_list = ["All"] + sorted(df["year"].dropna().unique().tolist())
 year_filter = st.sidebar.selectbox("Year", year_list)
 
-min_sal = int(df["salary_lakhs"].min())
-max_sal = int(df["salary_lakhs"].max())
+sal_min = df["salary_lakhs"].min(skipna=True)
+sal_max = df["salary_lakhs"].max(skipna=True)
 
-salary_filter = st.sidebar.slider(
-    "Salary Range",
-    min_sal,
-    max_sal,
-    (min_sal, max_sal)
-)
+if pd.isna(sal_min) or pd.isna(sal_max) or sal_min >= sal_max:
+    st.sidebar.warning("Salary filter unavailable due to data issues")
+    salary_filter = (0, float("inf"))
+else:
+    min_sal = int(sal_min)
+    max_sal = int(sal_max)
+
+    salary_filter = st.sidebar.slider(
+        "Salary Range (Lakhs)",
+        min_sal,
+        max_sal,
+        (min_sal, max_sal)
+    )
 
 # ----------------------------
 # 🔘 Toggles
