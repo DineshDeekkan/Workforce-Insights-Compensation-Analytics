@@ -66,24 +66,30 @@ def load_data(_seed_status):
 
 df = load_data(seed_status)
 
+st.write("Sample salary_in_lakhs values:")
+st.write(df["salary_in_lakhs"].head(20))
+
 # ------------------------------------------------------
-# SALARY NORMALIZATION (TEXT-SAFE & FINAL)
+# SALARY NORMALIZATION (BULLETPROOF)
 # ------------------------------------------------------
 
 df["salary_lakhs"] = (
     df["salary_in_lakhs"]
     .astype(str)
+    .str.lower()
     .str.replace(",", "", regex=False)
+    .str.replace("lpa", "", regex=False)
+    .str.replace("lakhs", "", regex=False)
+    .str.replace("lakh", "", regex=False)
+    .str.replace("₹", "", regex=False)
+    .str.extract(r"(\d+\.?\d*)")[0]
 )
 
-df["salary_lakhs"] = pd.to_numeric(
-    df["salary_lakhs"], errors="coerce"
-)
+df["salary_lakhs"] = pd.to_numeric(df["salary_lakhs"], errors="coerce")
 
-# Keep valid salaries only
-df = df[df["salary_lakhs"].notna() & (df["salary_lakhs"] > 0)]
-
-st.write("Salary Lakhs Stats:", df["salary_lakhs"].describe())
+# ⚠️ DO NOT FILTER YET
+st.write("Salary Lakhs Stats AFTER CLEANING:")
+st.write(df["salary_lakhs"].describe())
 
 # ------------------------------------------------------
 # SIDEBAR - ADVANCED CONTROL PANEL
